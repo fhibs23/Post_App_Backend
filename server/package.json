@@ -1,9 +1,8 @@
 {
   "name": "node-js",
-  "proxy": "https://localhost:8080",
   "version": "1.0.0",
   "description": "Node.js ",
-  "main": "server.js",
+  "main": "server2.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
