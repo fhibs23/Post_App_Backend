@@ -2,8 +2,19 @@ const express = require("express");
 const cors = require("cors");
 const emailConfig = require("./app/config/email.config");
 const mg = require('mailgun-js');
-
+const multer = require("multer");
 const app = express();
+const Storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, "./attachments");
+    },
+    filename: function (req, file, callback) {
+        callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`);
+    },
+});
+const attachmentUpload = multer({
+    storage: Storage,
+}).single("attachment");
 
 const mailgun = () =>
     mg({
@@ -26,19 +37,18 @@ app.get("/", (req, res) => {
 });
 require('./app/routes/auth.routes')(app);
 require('./app/routes/user.routes')(app);
-require("./app/routes/tutorial.routes")(app);
 
 app.post('/api/email', (req, res) => {
-    const { from, email, subject, message } = req.body;
-    console.log(from);
+    const { from, sender, email, subject, message, attachmentPath } = req.body;
     mailgun()
         .messages()
         .send(
             {
-                from: `${from}`,
+                from: `${sender} ${from}`,
                 to: `${email}`,
                 subject: `${subject}`,
                 html: `<p>${message}</p>`,
+                attachment: `${attachmentPath}` ,
 
             },
             (error, body) => {
@@ -58,6 +68,5 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 const db = require("./app/models");
-const Role = db.role;
 db.sequelize.sync();
 
